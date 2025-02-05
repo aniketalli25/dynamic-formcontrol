@@ -1,0 +1,54 @@
+<div class="container">
+  <h2 class="form-title">✨ Dynamic Form Builder ✨</h2>
+
+  <div class="buttons">
+    <button (click)="addField('text')" class="btn-custom">➕ Add Text</button>
+    <button (click)="addField('textarea')" class="btn-custom">📝 Add Textarea</button>
+    <button (click)="addField('dropdown')" class="btn-custom">📋 Add Dropdown</button>
+    <button (click)="addField('checkbox')" class="btn-custom">✅ Add Checkbox</button>
+    <button (click)="addField('radio')" class="btn-custom">🔘 Add Radio</button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submitForm()" class="dynamic-form">
+    <div class="form-grid" formArrayName="fields">
+      <div *ngFor="let field of fields.controls; let i = index" [formGroupName]="i" class="form-item">
+
+        <label class="form-label">{{ field.value.label }}</label>
+        <input type="text" formControlName="label" placeholder="Enter label" class="form-input">
+
+        <!-- Text Input -->
+        <input *ngIf="field.value.type === 'text'" type="text" formControlName="placeholder" placeholder="Enter text" class="form-input">
+
+        <!-- Textarea -->
+        <textarea *ngIf="field.value.type === 'textarea'" formControlName="placeholder" placeholder="Enter text" class="form-input"></textarea>
+
+        <!-- Dropdown -->
+        <div *ngIf="field.value.type === 'dropdown'">
+          <select formControlName="selectedValue" class="form-input">
+            <option value="">Select</option>
+            <option *ngFor="let option of field.get('options')?.value" [value]="option.value">{{ option.value }}</option>
+          </select>
+        </div>
+
+        <!-- Checkbox -->
+        <input *ngIf="field.value.type === 'checkbox'" type="checkbox" formControlName="required" class="form-checkbox">
+
+        <!-- Radio Buttons -->
+        <div *ngIf="field.value.type === 'radio'">
+          <div *ngFor="let option of field.get('options')?.value">
+            <input type="radio" [value]="option.value" formControlName="selectedValue"> {{ option.value }}
+          </div>
+        </div>
+
+        <!-- Validation Error -->
+        <div class="error-message" *ngIf="field.get('label')?.invalid && field.get('label')?.touched">
+          Label is required!
+        </div>
+
+        <button type="button" (click)="removeField(i)" class="btn-remove">❌ Remove</button>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-submit">🚀 Submit</button>
+  </form>
+</div>
