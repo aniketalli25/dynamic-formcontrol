@@ -8,14 +8,20 @@ export class FormService {
   constructor(private fb: FormBuilder) {}
 
   createField(type: string): FormGroup {
-    return this.fb.group({
+    const control = this.fb.group({
       type: [type],
       label: ['', Validators.required],
       placeholder: [type === 'text' || type === 'textarea' ? '' : null],
       required: [false],
       selectedValue: [null],
-      options: this.fb.array([]), // EMPTY initially
+      options: this.fb.array([]),
     });
+
+    if (type === 'text' || type === 'textarea') {
+      control.get('placeholder')?.setValidators([Validators.required]);
+    }
+
+    return control;
   }
 
   createOption(value: string = ''): FormGroup {

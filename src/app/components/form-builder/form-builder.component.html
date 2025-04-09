@@ -1,7 +1,6 @@
 <div class="container">
   <h2 class="form-title">✨ Dynamic Form Builder ✨</h2>
 
-  <!-- Buttons to add new fields -->
   <div class="buttons">
     <button (click)="addField('text')" class="btn-custom">➕ Add Text</button>
     <button (click)="addField('textarea')" class="btn-custom">📝 Add Textarea</button>
@@ -10,19 +9,22 @@
     <button (click)="addField('radio')" class="btn-custom">🔘 Add Radio</button>
   </div>
 
-  <!-- Main form -->
+  <!-- 🧩 Form Generation Part -->
   <form [formGroup]="form" (ngSubmit)="submitForm()" class="dynamic-form">
     <div class="form-grid" formArrayName="fields">
       <div *ngFor="let field of fields.controls; let i = index" [formGroupName]="i" class="form-item">
-        <!-- Label Input -->
         <label class="form-label">Label</label>
         <input type="text" formControlName="label" placeholder="Enter label" class="form-input" />
+        <div class="error-message" *ngIf="field.get('label')?.invalid && field.get('label')?.touched">
+          Label is required!
+        </div>
 
-        <!-- Placeholder for Text and Textarea -->
         <input *ngIf="field.value.type === 'text'" type="text" formControlName="placeholder" placeholder="Enter text" class="form-input" />
         <textarea *ngIf="field.value.type === 'textarea'" formControlName="placeholder" placeholder="Enter text" class="form-input"></textarea>
+        <div class="error-message" *ngIf="field.get('placeholder')?.invalid && field.get('placeholder')?.touched">
+          Placeholder is required!
+        </div>
 
-        <!-- Dropdown -->
         <div *ngIf="field.value.type === 'dropdown'">
           <select formControlName="selectedValue" class="form-input">
             <option value="">Select</option>
@@ -31,54 +33,56 @@
             </option>
           </select>
           <button type="button" (click)="addOption(i)">➕ Add Option</button>
-
-          <!-- Validation message -->
           <div class="error-message" *ngIf="field.get('selectedValue')?.invalid && field.get('selectedValue')?.touched">
             Please select a dropdown option.
           </div>
         </div>
 
-        <!-- Checkbox -->
         <div *ngIf="field.value.type === 'checkbox'">
-          <label>
-            <input type="checkbox" [checked]="field.get('required')?.value" (change)="toggleRequired(i, $event)" />
-            Required
-          </label>
+          <div *ngIf="field.get('options')?.value.length > 0">
+            <div *ngFor="let option of field.get('options')?.value; let j = index">
+              <label>
+                <input type="checkbox" disabled /> {{ option.value }}
+              </label>
+              <button type="button" (click)="removeOption(i, j)">❌</button>
+            </div>
+          </div>
+          <button type="button" (click)="addOption(i)">➕ Add Option</button>
         </div>
 
-        <!-- Radio Buttons -->
-      <!-- Radio Buttons -->
-<div *ngIf="field.value.type === 'radio'">
-  <div *ngIf="field.get('options')?.value.length > 0">
-    <div *ngFor="let option of field.get('options')?.value; let j = index">
-      <input
-        type="radio"
-        [value]="option.value"
-        formControlName="selectedValue"
-        name="radioGroup{{ i }}"
-      /> {{ option.value }}
-      <button type="button" (click)="removeOption(i, j)">❌</button>
-    </div>
-  </div>
-  <button type="button" (click)="addOption(i)">➕ Add Option</button>
-
-  <div class="error-message" *ngIf="field.get('selectedValue')?.invalid && field.get('selectedValue')?.touched">
-    Please select an option.
-  </div>
-</div>
-
-
-        <!-- Label Validation -->
-        <div class="error-message" *ngIf="field.get('label')?.invalid && field.get('label')?.touched">
-          Label is required!
+        <div *ngIf="field.value.type === 'radio'">
+          <div *ngIf="field.get('options')?.value.length > 0">
+            <div *ngFor="let option of field.get('options')?.value; let j = index">
+              <input type="radio" [value]="option.value" formControlName="selectedValue" name="radioGroup{{ i }}" /> {{ option.value }}
+              <button type="button" (click)="removeOption(i, j)">❌</button>
+            </div>
+          </div>
+          <button type="button" (click)="addOption(i)">➕ Add Option</button>
+          <div class="error-message" *ngIf="field.get('selectedValue')?.invalid && field.get('selectedValue')?.touched">
+            Please select an option.
+          </div>
         </div>
 
-        <!-- Remove field -->
         <button type="button" (click)="removeField(i)" class="btn-remove">❌ Remove</button>
       </div>
     </div>
 
-    <!-- Submit Button -->
     <button type="submit" class="btn-submit" [disabled]="form.invalid || fields.length === 0">🚀 Submit</button>
   </form>
+
+  <!-- 📝 Form Submission Part -->
+  <div *ngIf="submittedData.length > 0" class="submission-preview">
+    <h3>📦 Submitted Data</h3>
+    <div *ngFor="let data of submittedData; let i = index" class="submission-item">
+      <h4>Submission #{{ i + 1 }}</h4>
+      <ul>
+        <li *ngFor="let field of data.fields">
+          <strong>{{ field.label }}:</strong>
+          <span *ngIf="field.type === 'text' || field.type === 'textarea'">{{ field.placeholder }}</span>
+          <span *ngIf="field.type === 'dropdown' || field.type === 'radio'">{{ field.selectedValue }}</span>
+          <span *ngIf="field.type === 'checkbox'">{{ field.required ? 'Required' : 'Optional' }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>

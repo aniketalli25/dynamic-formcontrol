@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormArray, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FormService } from 'src/app/services/form.service';
 
 @Component({
@@ -9,6 +9,7 @@ import { FormService } from 'src/app/services/form.service';
 })
 export class FormBuilderComponent {
   form: FormGroup;
+  submittedData: any[] = [];
 
   constructor(private formService: FormService) {
     this.form = this.formService.getFormGroup();
@@ -37,12 +38,14 @@ export class FormBuilderComponent {
       alert('Option already exists or is empty!');
     }
 
-    // Trigger validation update for radio/dropdown
     const type = field.get('type')?.value;
     if (type === 'dropdown' || type === 'radio') {
       field.get('selectedValue')?.setValidators([Validators.required]);
       field.get('selectedValue')?.updateValueAndValidity();
     }
+
+    // For checkbox, we just allow multiple options to be added (no selectedValue)
+
   }
 
   removeOption(fieldIndex: number, optionIndex: number) {
@@ -52,7 +55,30 @@ export class FormBuilderComponent {
 
   toggleRequired(index: number, event: Event) {
     const input = event.target as HTMLInputElement;
-    this.fields.at(index).get('required')?.setValue(input.checked);
+    const field = this.fields.at(index);
+    const isRequired = input.checked;
+
+    field.get('required')?.setValue(isRequired);
+
+    const type = field.get('type')?.value;
+
+    if (type === 'dropdown' || type === 'radio') {
+      const selectedControl = field.get('selectedValue');
+      selectedControl?.clearValidators();
+      if (isRequired) {
+        selectedControl?.setValidators([Validators.required]);
+      }
+      selectedControl?.updateValueAndValidity();
+    }
+
+    if (type === 'text' || type === 'textarea') {
+      const placeholderControl = field.get('placeholder');
+      placeholderControl?.clearValidators();
+      if (isRequired) {
+        placeholderControl?.setValidators([Validators.required]);
+      }
+      placeholderControl?.updateValueAndValidity();
+    }
   }
 
   submitForm() {
@@ -66,7 +92,9 @@ export class FormBuilderComponent {
       return;
     }
 
-    console.log('Form Data:', this.form.value);
+    this.submittedData.push(this.form.value);
+    this.form.reset();
+    (this.form.get('fields') as FormArray).clear();
     alert('🎉 Submitted Successfully!');
   }
 }
