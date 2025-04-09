@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormArray, FormGroup } from '@angular/forms';
+import { FormArray, FormGroup, Validators } from '@angular/forms';
 import { FormService } from 'src/app/services/form.service';
 
 @Component({
@@ -27,8 +27,22 @@ export class FormBuilderComponent {
   }
 
   addOption(fieldIndex: number) {
-    const options = this.fields.at(fieldIndex).get('options') as FormArray;
-    options.push(this.formService.createOption());
+    const field = this.fields.at(fieldIndex);
+    const options = field.get('options') as FormArray;
+    const newValue = prompt('Enter option value:');
+
+    if (newValue && !options.value.some((opt: any) => opt.value === newValue)) {
+      options.push(this.formService.createOption(newValue));
+    } else {
+      alert('Option already exists or is empty!');
+    }
+
+    // Trigger validation update for radio/dropdown
+    const type = field.get('type')?.value;
+    if (type === 'dropdown' || type === 'radio') {
+      field.get('selectedValue')?.setValidators([Validators.required]);
+      field.get('selectedValue')?.updateValueAndValidity();
+    }
   }
 
   removeOption(fieldIndex: number, optionIndex: number) {
@@ -36,13 +50,23 @@ export class FormBuilderComponent {
     options.removeAt(optionIndex);
   }
 
+  toggleRequired(index: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.fields.at(index).get('required')?.setValue(input.checked);
+  }
+
   submitForm() {
+    if (this.fields.length === 0) {
+      alert('⚠️ Please add at least one field.');
+      return;
+    }
+
     if (this.form.invalid) {
-      alert("Please fill in all required fields.");
+      alert('⚠️ Please fix all required fields.');
       return;
     }
 
     console.log('Form Data:', this.form.value);
-    alert('🎉 Form submitted successfully!');
+    alert('🎉 Submitted Successfully!');
   }
 }

@@ -11,16 +11,16 @@ export class FormService {
     return this.fb.group({
       type: [type],
       label: ['', Validators.required],
-      placeholder: [type === 'text' || type === 'textarea' ? '' : null, type === 'text' || type === 'textarea' ? Validators.required : []],
+      placeholder: [type === 'text' || type === 'textarea' ? '' : null],
       required: [false],
-      selectedValue: [],
-      options: this.fb.array(type === 'dropdown' || type === 'radio' ? [this.createOption()] : []), // Only for dropdown & radio
+      selectedValue: [null],
+      options: this.fb.array([]), // EMPTY initially
     });
   }
 
-  createOption(): FormGroup {
+  createOption(value: string = ''): FormGroup {
     return this.fb.group({
-      value: ['', ],
+      value: [value, Validators.required],
     });
   }
 

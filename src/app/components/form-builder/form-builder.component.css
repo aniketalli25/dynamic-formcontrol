@@ -3,6 +3,27 @@
   margin: auto;
   text-align: center;
 }
+.btn-submit {
+  background-color: #28a745; /* Green color when enabled */
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.btn-submit:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+.btn-submit:disabled {
+  background-color: #cccccc; /* Light gray when disabled */
+  color: #666666; /* Darker text */
+  cursor: not-allowed;
+}
+
 
 .buttons {
   margin-bottom: 20px;
